@@ -55,6 +55,11 @@ sub get_timestamp {
 		1900 + $year, 1 + $mon, $mday, $hour, $min, $sec, $msec);
 }
 
+sub getpid {
+
+	return $$;
+}
+
 
 
 
@@ -76,7 +81,7 @@ sub info {
 	my $timestamp = util::get_timestamp();
 	my $stream = undef;
 	open($stream, '>>filter.log');
-	print($stream $timestamp, ' (', $$, ') [info] ', @_, "\n");
+	print($stream $timestamp, ' (', util::getpid(), ') [info] ', @_, "\n");
 	close($stream);
 }
 
@@ -233,7 +238,7 @@ sub eom {
 
 sub run {
 
-	foreach my $sign ('INT', 'TERM') {
+	foreach my $sign ('INT', 'TERM', '') {
 		$SIG{$sign} = \&main::_on_signal;
 	}
 
@@ -256,8 +261,7 @@ sub run {
 		my $milter = new Sendmail::PMilter();
 		# $milter->auto_setconn('inet:10026@127.0.0.1', '/etc/postfix/main.cf');
 		$milter->setconn('inet:10025@127.0.0.1');
-		$milter->register('myfilter', $callbacks,
-				Sendmail::Milter::SMFI_CURR_ACTS);
+		$milter->register('myfilter', $callbacks, Sendmail::Milter::SMFI_CURR_ACTS);
 		#$milter->register('myfilter', $callbacks, Sendmail::Milter::SMFI_V2_ACTS);
 		$milter->main();
 	}
@@ -312,11 +316,7 @@ sub create_daemon {
 
 	my ($this) = @_;
 	my $pid = $this->core()->Init();
-	if(!$pid) {
-		logger::info('シェル側？ (pid=', $pid, ')');
-		return 0;
-	}
-	logger::info('メイン処理？ (pid=', $pid, ')');
+	$this->{'.child'} = $pid;
 	return $pid;
 }
 
@@ -333,7 +333,7 @@ sub kill {
 	my $pidfile = $this->{'.pidfile'};
 	my $pid = $this->core()->Status($pidfile);
 	out::println("Stopping pid $pid...");
-	if(!$this->core()->Kill_Daemon($pidfile, 9)) {
+	if(!$this->core()->Kill_Daemon($pidfile, 2)) {
 		return 0;
 	}
 	return 1;
@@ -382,7 +382,7 @@ sub _start {
 	}
 
 	if($service->create_daemon()) {
-		# 呼び出し側(終了)
+		# 呼び出し側(このプロセスはここで終了する)
 		return;
 	}
 
