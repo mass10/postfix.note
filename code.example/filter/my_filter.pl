@@ -189,7 +189,8 @@ sub envrcpt {
 		}
 	}
 
-	return Sendmail::PMilter::SMFIS_ACCEPT;
+	return Sendmail::PMilter::SMFIS_CONTINUE;
+	# return Sendmail::PMilter::SMFIS_ACCEPT;
 }
 
 sub header {
@@ -220,7 +221,9 @@ sub body {
 
 
 
-	logger::info('<body()>');
+	logger::info('<body()> begin');
+	sleep(30);
+	logger::info('<body()> end');
 
 	return Sendmail::PMilter::SMFIS_CONTINUE;
 }
@@ -333,7 +336,7 @@ sub kill {
 	my $pidfile = $this->{'.pidfile'};
 	my $pid = $this->core()->Status($pidfile);
 	out::println("Stopping pid $pid...");
-	if(!$this->core()->Kill_Daemon($pidfile, 2)) {
+	if(!$this->core()->Kill_Daemon($pidfile, 9)) {
 		return 0;
 	}
 	return 1;
