@@ -1,5 +1,25 @@
 #!/usr/bin/perl
 # coding: utf-8
+#
+#
+#
+#
+# Milter のスケルトン
+#
+# 1. [main.cf] に下記の行を追記。
+# smtpd_milters = inet:127.0.0.1:10025
+#
+# 2. milter を起動
+#
+# 3. Postfix を起動
+#
+# ※2 と 3 は逆でもよい
+#
+#
+#
+#
+#
+#
 
 use strict;
 use Sendmail::PMilter;
